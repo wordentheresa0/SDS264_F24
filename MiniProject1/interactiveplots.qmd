@@ -1,0 +1,216 @@
+---
+title: "Mini Project 1 Interactive Plots"
+sidebar: false
+format:
+  html: default
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+#| message: false
+#| warning: false
+
+# Initial packages required (we'll be adding more)
+library(tidyverse)
+library(mdsr)      # package associated with our MDSR book
+library(RColorBrewer)
+library(viridis)
+library(maps)
+library(sf)
+library(leaflet)
+library(htmltools)
+```
+
+
+
+
+```{r}
+# Reading in data table
+airports <- read_csv("~/Downloads/Airports.csv")
+```
+
+```{r}
+# Making a table for how many airports are in each state (includes U.S. territories)
+all_airport_counts <- airports |>
+  filter(Fac_Type == "AIRPORT") |>
+  group_by(State_Name) |>
+  mutate(State_Name = str_to_lower(State_Name)) |>
+  summarise(airport_count = n()) 
+```
+
+```{r}
+# Filtering out U.S. territories
+state_airport_counts <- all_airport_counts |>
+  filter(!(State_Name %in% c("american samoa", "guam", "midway atoll", 
+                             "n mariana islands", "puerto rico", 
+                             "virgin islands", "wake island")))
+
+```
+
+```{r}
+us_states <- map_data("state")
+head(us_states)
+```
+
+```{r}
+states <- read_sf("https://rstudio.github.io/leaflet/json/us-states.geojson")
+class(states)
+states
+```
+
+```{r}
+# Joining airport data with state mapping data and creating density intervals
+state_plotting_sf <- states |>
+  mutate(name = str_to_lower(name)) |>
+  left_join(state_airport_counts, by = c("name" = "State_Name")) |>
+  mutate(density_intervals = cut(airport_count, 
+                                  breaks = c(0, 20, 50, 100, 200, 500, 1000, 1500, 2000, Inf), 
+                                  include.lowest = TRUE)) |>
+  filter(!(name %in% c("alaska", "hawaii", "puerto rico"))) |>
+  mutate(labels = str_c(name, ": ", airport_count, " airports"))
+
+```
+
+```{r}
+# Creating color palette for the number of airports
+pal <- colorBin("YlOrRd", domain = state_plotting_sf$airport_count, 
+                bins = c(0, 20, 50, 100, 200, 500, 1000, 1500, 2000, Inf))
+
+# Creating labels
+labels <- lapply(state_plotting_sf$labels, HTML)
+```
+
+
+```{r}
+# Plotting the interactive map
+leaflet(state_plotting_sf) %>%
+  setView(-96, 37.8, 4) %>%
+  addTiles() %>%
+  addPolygons(
+    fillColor = ~pal(airport_count),
+    weight = 2,
+    opacity = 1,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+    highlightOptions = highlightOptions(
+      weight = 5,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.7,
+      bringToFront = TRUE),
+    label = labels,
+    labelOptions = labelOptions(
+      style = list("font-weight" = "normal", padding = "3px 8px"),
+      textsize = "15px",
+      direction = "auto")) %>%
+  addLegend(pal = pal, values = ~airport_count, opacity = 0.7, title = NULL,
+            position = "bottomright")
+
+```
+
+
+
+
+
+
+```{r}
+seaplane_counts <- airports |>
+  filter(Fac_Type == "SEAPLANE BASE") |>
+  mutate(State_Name = str_to_lower(State_Name)) |>
+  filter(!(State_Name %in% c("american samoa", "guam", "midway atoll", 
+                             "n mariana islands", "puerto rico", 
+                             "virgin islands", "wake island"))) |>
+  group_by(State_Name) |>
+  summarise(seaplane_counts = n()) |>
+  mutate(has_seaplane_base = if_else(seaplane_counts > 0, "Yes", "No"))
+```
+
+
+```{r}
+# Get list of states from airport data to be used later
+all_states <- airports |>
+  mutate(State_Name = str_to_lower(State_Name)) |>
+  filter(!(State_Name %in% c("american samoa",
+                             "guam",
+                             "midway atoll", 
+                             "n mariana islands",
+                             "puerto rico", 
+                             "virgin islands",
+                             "wake island"))) |>
+  distinct(State_Name)
+
+```
+
+```{r}
+# Get the seaplane counts per state
+seaplane_counts <- airports |>
+  filter(Fac_Type == "SEAPLANE BASE") |>
+  mutate(State_Name = str_to_lower(State_Name)) |>
+  filter(!(State_Name %in% c("american samoa",
+                             "guam",
+                             "midway atoll", 
+                             "n mariana islands",
+                             "puerto rico", 
+                             "virgin islands",
+                             "wake island"))) |>
+  group_by(State_Name) |>
+  summarise(seaplane_counts = n())
+```
+
+```{r}
+# Join the counts with the list of states and filling missing values with 0
+state_has_seaplane <- all_states |>
+  left_join(seaplane_counts, by = "State_Name") |>
+  mutate(seaplane_counts = if_else(is.na(seaplane_counts), 0, seaplane_counts),
+         has_seaplane_base = if_else(seaplane_counts > 0, "Yes", "No")) |>
+  arrange(State_Name)
+
+```
+
+
+```{r}
+# Joining seaplane base data with state mapping data
+state_plotting_sf <- states |>
+  mutate(name = str_to_lower(name)) |>
+  left_join(state_has_seaplane, by = c("name" = "State_Name")) |>
+  filter(!(name %in% c("alaska", "hawaii", "puerto rico"))) |>
+  mutate(labels = str_c(name, ": ", has_seaplane_base))
+
+# Creating color palette for legend
+pal <- colorFactor(c("purple", "green"), domain = state_plotting_sf$has_seaplane_base)
+
+# Creating labels
+labels <- lapply(state_plotting_sf$labels, HTML)
+
+# Create interactive map
+leaflet(state_plotting_sf) %>%
+  setView(-96, 37.8, 4) %>%
+  addTiles() %>%
+  addPolygons(
+    fillColor = ~pal(has_seaplane_base),
+    weight = 2,
+    opacity = 1,
+    color = "white",
+    dashArray = "3",
+    fillOpacity = 0.7,
+    highlightOptions = highlightOptions(
+      weight = 5,
+      color = "#666",
+      dashArray = "",
+      fillOpacity = 0.7,
+      bringToFront = TRUE),
+    label = labels,
+    labelOptions = labelOptions(
+      style = list("font-weight" = "normal", padding = "3px 8px"),
+      textsize = "15px",
+      direction = "auto")) %>%
+  addLegend(pal = pal, values = ~has_seaplane_base, opacity = 0.7, title = NULL,
+            position = "bottomright")
+
+```
+```
+
+
