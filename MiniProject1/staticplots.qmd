@@ -1,0 +1,147 @@
+---
+title: "Mini Project 1 Static Plots"
+sidebar: false
+format:
+  html: default
+editor_options: 
+  chunk_output_type: console
+---
+
+
+```{r}
+#| message: false
+#| warning: false
+
+# Initial packages required (we'll be adding more)
+library(tidyverse)
+library(mdsr)      # package associated with our MDSR book
+library(RColorBrewer)
+library(viridis)
+library(maps)
+library(sf)
+library(leaflet)
+library(htmltools)
+```
+
+I am using data about airports in the United States published by the Bureau of Transportation Statistics.
+Source: https://data.bts.gov/Aviation/Airports/kfcv-nyy3/about_data
+
+
+```{r}
+# Reading in data table
+airports <- read_csv("~/Downloads/Airports.csv")
+```
+
+
+The first plot I will make is one that will show how many airports are in each state, excluding Alaska and Hawaii.
+
+```{r}
+# Making a table for how many airports are in each state (includes U.S. territories)
+all_airport_counts <- airports |>
+  filter(Fac_Type == "AIRPORT") |>
+  group_by(State_Name) |>
+  mutate(State_Name = str_to_lower(State_Name)) |>
+  summarise(airport_count = n()) 
+```
+
+```{r}
+# Filtering out U.S. territories
+state_airport_counts <- all_airport_counts |>
+  filter(!(State_Name %in% c("american samoa",
+                             "guam", 
+                             "midway atoll", 
+                             "n mariana islands",
+                             "puerto rico", 
+                             "virgin islands",
+                             "wake island")))
+
+```
+
+```{r}
+# Loading state mapping data
+us_states <- map_data("state")
+head(us_states)
+```
+
+```{r}
+# Joining airport data with state mapping data and plotting
+state_airport_counts |>
+  right_join(us_states, by = c("State_Name" = "region")) |>
+  rename(region = State_Name) |>
+  ggplot(mapping = aes(x = long,
+                       y = lat,
+                       group = group)) + 
+  geom_polygon(aes(fill = airport_count), color = "black") +
+  labs(title = "Number of Airports in Each State",
+       fill = "Number of Airports") +
+  coord_map() +
+  theme_void() +
+  scale_fill_viridis()
+```
+
+This is a choropleth map of the United States (excluding Alaska and Hawaii) showing the distribution of airports in each state, with each stated colored according to the number of airports that are in the state. The map utilizes a color gradient that goes from purple to yellow, where purple and darker shades of blue represent lower airport counts and lighter shades of blue, green, and yellow represent higher airport counts. The scale on the color gradient indicates the range of the number of airports in a state goes from 0 to 1500. Texas is a notable standout as it is the only state colored yellow, indicating it has the most amount of airports out of the rest of the states. The plot shows that states colored lighter blue like California, Florida, and Illinois have a greater number of airports compared to states colored dark purple like Vermont, New Hampshire, and Wyoming. 
+
+
+
+The next plot I will make will show whether or not a state has at least one seaplane base.
+
+```{r}
+# Get list of states from airport data to be used later
+all_states <- airports |>
+  mutate(State_Name = str_to_lower(State_Name)) |>
+  filter(!(State_Name %in% c("american samoa",
+                             "guam",
+                             "midway atoll", 
+                             "n mariana islands",
+                             "puerto rico", 
+                             "virgin islands",
+                             "wake island"))) |>
+  distinct(State_Name)
+
+```
+
+```{r}
+# Get the seaplane counts per state
+seaplane_counts <- airports |>
+  filter(Fac_Type == "SEAPLANE BASE") |>
+  mutate(State_Name = str_to_lower(State_Name)) |>
+  filter(!(State_Name %in% c("american samoa",
+                             "guam",
+                             "midway atoll", 
+                             "n mariana islands",
+                             "puerto rico", 
+                             "virgin islands",
+                             "wake island"))) |>
+  group_by(State_Name) |>
+  summarise(seaplane_counts = n())
+```
+
+```{r}
+# Join the counts with the list of states and filling missing values with 0
+state_has_seaplane <- all_states |>
+  left_join(seaplane_counts, by = "State_Name") |>
+  mutate(seaplane_counts = if_else(is.na(seaplane_counts), 0, seaplane_counts),
+         has_seaplane_base = if_else(seaplane_counts > 0, "Yes", "No")) |>
+  arrange(State_Name)
+
+```
+
+```{r}
+# Plotting the results
+state_has_seaplane |>
+  right_join(us_states, by = c("State_Name" = "region")) |>
+  rename(region = State_Name) |>
+  ggplot(mapping = aes(x = long,
+                       y = lat,
+                       group = group)) +
+  geom_polygon(aes(fill = has_seaplane_base), color = "darkgrey", linewidth = 0.2) +
+  labs(title = "Presence of Seaplane Base in Each State",
+       fill = "Has Seaplane Base") +
+  coord_map() + 
+  theme_void() +  
+  scale_fill_manual(values = c("green", "purple"))
+```
+
+This is a map of the United States (excluding Alaska and Hawaii) that shows whether a state contains a seaplane base or not. States that do not contain a seaplane base are colored green, and states that do contain a seaplane base are colored purple. The map shows that a large majority of the mainland states have at least one seaplane base with only a handful of states do not have a seaplane base. The map shows that the states that do not have a seaplane base are Utah, Wyoming, Arizona, Nevada, North Dakota, Iowa, Kansas, Arkansas, Mississippi, Kentucky, and Delaware.
+
+
