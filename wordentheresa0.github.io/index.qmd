@@ -1,11 +1,9 @@
 ---
-title: "wordentheresa0.github.io"
+title: "Welcome to My Website!"
 ---
 
-This is a Quarto website.
+insert picture here
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+My name is Theresa Worden. I am a current senior at St. Olaf College majoring in computer science and mathematics. My passion and previous professional experience lies within the world of software development. Outside of work and academia, I am an amateur boxer, and I am currently training for my first fight this winter. Click around my website to learn more about me and my projects.
 
-```{r}
-1 + 1
-```
+# 

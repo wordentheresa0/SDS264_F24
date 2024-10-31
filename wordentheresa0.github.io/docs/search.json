@@ -2,15 +2,57 @@
   {
     "objectID": "about.html",
     "href": "about.html",
-    "title": "About",
+    "title": "About Me",
     "section": "",
-    "text": "About this site\n\n1 + 1\n\n[1] 2"
+    "text": "I am currently a senior at St. Olaf College, pursuing a double major in computer science and mathematics, and I will be graduating in December 2024. Throughout my time in school, I have developed an strong foundation in software development with an interest in full-stack development.\nOver the past two summers, I have interned at Best Buy and Disney where I got to work on real world projects like tax integration software at Best Buy and employee web applications at Disney.\n\n\n\nI am from White Bear Lake, Minnesota (about 20-25 minutes outside of the twin cities). I was a very active child as I was a gymnast, soccer player, basketball player, and mixed martial arts student growing up. While gymnastics and mixed martial arts didn’t stick around as long, I continued to play soccer and basketball into high school and played soccer into college for two years. After my soccer journey ended, a new journey started as a friend of mine introduced me to boxing. I have been boxing for a year and a half and have been loving it every second.\nI have been playing the electric guitar since freshman year of high school. I love learning new songs and riffs and getting together with friends for a little jam session. Some of the bands that we like to play songs from are Blink-182, The Strokes, Green Day, The Smashing Pumpkins, and Muse."
   },
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "wordentheresa0.github.io",
+    "title": "Welcome to My Website!",
     "section": "",
-    "text": "This is a Quarto website.\nTo learn more about Quarto websites visit https://quarto.org/docs/websites.\n\n1 + 1\n\n[1] 2"
+    "text": "insert picture here\nMy name is Theresa Worden. I am a current senior at St. Olaf College majoring in computer science and mathematics. My passion and previous professional experience lies within the world of software development. Outside of work and academia, I am an amateur boxer, and I am currently training for my first fight this winter. Click around my website to learn more about me and my projects."
+  },
+  {
+    "objectID": "option1.html",
+    "href": "option1.html",
+    "title": "Option 1",
+    "section": "",
+    "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "option2.html",
+    "href": "option2.html",
+    "title": "Option 2",
+    "section": "",
+    "text": "About this site\n\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "option3.html",
+    "href": "option3.html",
+    "title": "Option 3",
+    "section": "",
+    "text": "Yippie"
+  },
+  {
+    "objectID": "about.html#about-me",
+    "href": "about.html#about-me",
+    "title": "About Me",
+    "section": "About Me",
+    "text": "About Me"
+  },
+  {
+    "objectID": "about.html#professional",
+    "href": "about.html#professional",
+    "title": "About Me",
+    "section": "",
+    "text": "I am currently a senior at St. Olaf College, pursuing a double major in computer science and mathematics, and I will be graduating in December 2024. Throughout my time in school, I have developed an strong foundation in software development with an interest in full-stack development.\nOver the past two summers, I have interned at Best Buy and Disney where I got to work on real world projects like tax integration software at Best Buy and employee web applications at Disney."
+  },
+  {
+    "objectID": "about.html#personal",
+    "href": "about.html#personal",
+    "title": "About Me",
+    "section": "",
+    "text": "I am from White Bear Lake, Minnesota (about 20-25 minutes outside of the twin cities). I was a very active child as I was a gymnast, soccer player, basketball player, and mixed martial arts student growing up. While gymnastics and mixed martial arts didn’t stick around as long, I continued to play soccer and basketball into high school and played soccer into college for two years. After my soccer journey ended, a new journey started as a friend of mine introduced me to boxing. I have been boxing for a year and a half and have been loving it every second.\nI have been playing the electric guitar since freshman year of high school. I love learning new songs and riffs and getting together with friends for a little jam session. Some of the bands that we like to play songs from are Blink-182, The Strokes, Green Day, The Smashing Pumpkins, and Muse."
   }
 ]

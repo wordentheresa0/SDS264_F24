@@ -9,10 +9,12 @@ website:
       - href: index.qmd
         text: Home
       - about.qmd
+      - miniproject1.qmd
+      - miniproject2.qmd
 
 format:
   html:
-    theme: cosmo
+    theme: lumen
     css: styles.css
     toc: true
 
