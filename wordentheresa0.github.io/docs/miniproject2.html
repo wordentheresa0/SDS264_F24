@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>wordentheresa0.github.io - Mini Project 2</title>
+<title>wordentheresa0.github.io - SDS: Mini Project 2</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -19,6 +19,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -94,15 +128,19 @@ ul.task-list li input[type="checkbox"] {
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./about.html"> 
-<span class="menu-text">About</span></a>
+<span class="menu-text">About Me</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./miniproject1.html"> 
-<span class="menu-text">Mini Project 2</span></a>
+<span class="menu-text">SDS: Mini Project 1</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./miniproject2.html" aria-current="page"> 
-<span class="menu-text">Mini Project 2</span></a>
+<span class="menu-text">SDS: Mini Project 2</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./saw.html"> 
+<span class="menu-text">The Saw Movies</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -123,7 +161,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Mini Project 2</h1>
+<h1 class="title">SDS: Mini Project 2</h1>
 </div>
 
 
@@ -140,6 +178,255 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+✔ dplyr     1.1.4     ✔ readr     2.1.5
+✔ forcats   1.0.0     ✔ stringr   1.5.1
+✔ ggplot2   3.5.1     ✔ tibble    3.2.1
+✔ lubridate 1.9.3     ✔ tidyr     1.3.1
+✔ purrr     1.0.2     
+── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ dplyr::filter() masks stats::filter()
+✖ dplyr::lag()    masks stats::lag()
+ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(polite)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gutenbergr)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(htmltools)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(rvest)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'rvest'
+
+The following object is masked from 'package:readr':
+
+    guess_encoding</code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">#Scrape the top 100 books from the past 30 days</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>get_gutenberg_top100 <span class="ot">&lt;-</span> <span class="cf">function</span>() {</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (robotstxt<span class="sc">::</span><span class="fu">paths_allowed</span>(<span class="st">"https://www.gutenberg.org/browse/scores/top#books-last30"</span>) <span class="sc">==</span> <span class="st">"TRUE"</span>) {</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    gutenberg_page <span class="ot">&lt;-</span> <span class="fu">read_html</span>(<span class="st">"https://www.gutenberg.org/browse/scores/top#books-last30"</span>)</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    books_last30 <span class="ot">&lt;-</span> <span class="fu">html_nodes</span>(gutenberg_page, <span class="st">"#books-last30+ ol li"</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    books_last30_text <span class="ot">&lt;-</span> <span class="fu">html_text</span>(books_last30)</span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    books_last30_tbl <span class="ot">&lt;-</span> <span class="fu">tibble</span>(</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">title =</span> <span class="fu">gsub</span>(<span class="st">" by.*"</span>, <span class="st">""</span>, books_last30_text),</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">author =</span> <span class="fu">gsub</span>(<span class="st">".* by "</span>, <span class="st">""</span>, books_last30_text),</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="at">popularity =</span> <span class="fu">seq.int</span>(<span class="dv">1</span>,<span class="dv">100</span>)</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  df_books30 <span class="ot">&lt;&lt;-</span> books_last30_tbl</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="fu">get_gutenberg_top100</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+ www.gutenberg.org                      </code></pre>
+</div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>top_100_books <span class="ot">&lt;-</span> <span class="fu">gutenberg_works</span>() <span class="sc">|&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(title <span class="sc">%in%</span> df_books30<span class="sc">$</span>title)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">#top_100_text &lt;- gutenberg_download(top_100_books$gutenberg_id, meta_fields = c("title", "author"))</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="co">#top_100_data &lt;- top_100_text |&gt;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a><span class="co">#  mutate(text = na_if(text, "")) |&gt;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co">#  na.omit() |&gt;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="co">#  group_by(title) |&gt;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">#  mutate(line_num = row_number()) |&gt;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co">#  ungroup()</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>book_ids <span class="ot">&lt;-</span> top_100_books<span class="sc">$</span>gutenberg_id</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>books_with_warnings <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>books_with_warningsb <span class="ot">&lt;-</span> <span class="fu">list</span>()</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>top_100_data <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>download_book <span class="ot">&lt;-</span> <span class="cf">function</span>(book_id, <span class="at">mirror =</span> <span class="st">"http://aleph.gutenberg.org"</span>) {</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tryCatch</span>(</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    {</span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>      data <span class="ot">&lt;-</span> <span class="fu">gutenberg_download</span>(book_id, <span class="at">meta_fields =</span> <span class="fu">c</span>(<span class="st">"title"</span>, <span class="st">"author"</span>), <span class="at">mirror =</span> mirror)</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>      top_100_data <span class="ot">&lt;&lt;-</span> <span class="fu">bind_rows</span>(top_100_data, data)</span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    },</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">warning =</span> <span class="cf">function</span>(w) {</span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>      books_with_warnings <span class="ot">&lt;&lt;-</span> <span class="fu">c</span>(books_with_warnings, book_id)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="fu">message</span>(<span class="st">"Warning for book ID: "</span>, book_id) </span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="cn">NULL</span>)</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>book_data <span class="ot">&lt;-</span> <span class="fu">lapply</span>(book_ids, download_book)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 11</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 46</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 100</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 120</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 145</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 174</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 345</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 730</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 1342</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 1513</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 2148</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 2199</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 2489</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 2641</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 19508</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 19640</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 41445</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 43936</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 51713</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 64317</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 67098</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning for book ID: 67979</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="st">"Books with warnings:"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] "Books with warnings:"</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(books_with_warnings)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[[1]]
+[1] 11
+
+[[2]]
+[1] 46
+
+[[3]]
+[1] 100
+
+[[4]]
+[1] 120
+
+[[5]]
+[1] 145
+
+[[6]]
+[1] 174
+
+[[7]]
+[1] 345
+
+[[8]]
+[1] 730
+
+[[9]]
+[1] 1342
+
+[[10]]
+[1] 1513
+
+[[11]]
+[1] 2148
+
+[[12]]
+[1] 2199
+
+[[13]]
+[1] 2489
+
+[[14]]
+[1] 2641
+
+[[15]]
+[1] 19508
+
+[[16]]
+[1] 19640
+
+[[17]]
+[1] 41445
+
+[[18]]
+[1] 43936
+
+[[19]]
+[1] 51713
+
+[[20]]
+[1] 64317
+
+[[21]]
+[1] 67098
+
+[[22]]
+[1] 67979</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>top_100_data <span class="ot">&lt;-</span> top_100_data <span class="sc">|&gt;</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">text =</span> <span class="fu">na_if</span>(text, <span class="st">""</span>)) <span class="sc">|&gt;</span> <span class="co">#changing empty lines to NA</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">na.omit</span>() <span class="sc">|&gt;</span> <span class="co">#removing those empty (NA) lines</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(title) <span class="sc">|&gt;</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line_num =</span> <span class="fu">row_number</span>()) <span class="sc">|&gt;</span> <span class="co">#adding line number (starts at 1 for each book)</span></span>
+<span id="cb35-6"><a href="#cb35-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>()</span>
+<span id="cb35-7"><a href="#cb35-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-8"><a href="#cb35-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-9"><a href="#cb35-9" aria-hidden="true" tabindex="-1"></a><span class="co">#print(top_100_data)</span></span>
+<span id="cb35-10"><a href="#cb35-10" aria-hidden="true" tabindex="-1"></a><span class="co">#Note: this dataset is way to long to render to pdf. </span></span>
+<span id="cb35-11"><a href="#cb35-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-12"><a href="#cb35-12" aria-hidden="true" tabindex="-1"></a><span class="co">#For viewing</span></span>
+<span id="cb35-13"><a href="#cb35-13" aria-hidden="true" tabindex="-1"></a>top_100_line_1 <span class="ot">&lt;-</span> top_100_data <span class="sc">|&gt;</span></span>
+<span id="cb35-14"><a href="#cb35-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(line_num <span class="sc">==</span> <span class="dv">1</span>)</span>
+<span id="cb35-15"><a href="#cb35-15" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(top_100_line_1)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 6 × 5
+  gutenberg_id text                                        title author line_num
+         &lt;int&gt; &lt;chr&gt;                                       &lt;chr&gt; &lt;chr&gt;     &lt;int&gt;
+1           33 The Scarlet Letter                          The … Hawth…        1
+2           41 The Legend of Sleepy Hollow                 The … Irvin…        1
+3           42 [Illustration]                              The … Steve…        1
+4           45 ANNE OF GREEN GABLES                        Anne… Montg…        1
+5          150 ******************************************… The … Plato         1
+6          244 A STUDY IN SCARLET                          A St… Doyle…        1</code></pre>
+</div>
+</div>
 
 
 

@@ -1,8 +1,19 @@
 ---
-title: "Welcome to My Website!"
+title: "Theresa Worden"
+about: 
+  template: trestles
+  image: img.JPG
+  image-shape: round
+  links: 
+    - icon: github
+      text: Github
+      href: https://github.com/wordentheresa0
+    - icon: linkedin
+      text: LinkedIn
+      href: https://www.linkedin.com/in/theresa-worden-023010178/
 ---
 
-insert picture here
+# Welcome to My Website!
 
 My name is Theresa Worden. I am a current senior at St. Olaf College majoring in computer science and mathematics. My passion and previous professional experience lies within the world of software development. Outside of work and academia, I am an amateur boxer, and I am currently training for my first fight this winter. Click around my website to learn more about me and my projects.
 

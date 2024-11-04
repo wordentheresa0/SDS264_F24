@@ -4,8 +4,6 @@ title: "About Me"
 
 # Theresa Worden
 
-insert picture of me here
-
 ## Professional
 
 I am currently a senior at St. Olaf College, pursuing a double major in computer science and mathematics, and I will be graduating in December 2024. Throughout my time in school, I have developed an strong foundation in software development with an interest in full-stack development.

@@ -11,6 +11,7 @@ website:
       - about.qmd
       - miniproject1.qmd
       - miniproject2.qmd
+      - saw.qmd
 
 format:
   html:

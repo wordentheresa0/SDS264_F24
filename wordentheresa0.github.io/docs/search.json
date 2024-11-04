@@ -9,9 +9,9 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "Welcome to My Website!",
+    "title": "Theresa Worden",
     "section": "",
-    "text": "insert picture here\nMy name is Theresa Worden. I am a current senior at St. Olaf College majoring in computer science and mathematics. My passion and previous professional experience lies within the world of software development. Outside of work and academia, I am an amateur boxer, and I am currently training for my first fight this winter. Click around my website to learn more about me and my projects."
+    "text": "Welcome to My Website!\nMy name is Theresa Worden. I am a current senior at St. Olaf College majoring in computer science and mathematics. My passion and previous professional experience lies within the world of software development. Outside of work and academia, I am an amateur boxer, and I am currently training for my first fight this winter. Click around my website to learn more about me and my projects."
   },
   {
     "objectID": "option1.html",
@@ -54,5 +54,201 @@
     "title": "About Me",
     "section": "",
     "text": "I am from White Bear Lake, Minnesota (about 20-25 minutes outside of the twin cities). I was a very active child as I was a gymnast, soccer player, basketball player, and mixed martial arts student growing up. While gymnastics and mixed martial arts didn’t stick around as long, I continued to play soccer and basketball into high school and played soccer into college for two years. After my soccer journey ended, a new journey started as a friend of mine introduced me to boxing. I have been boxing for a year and a half and have been loving it every second.\nI have been playing the electric guitar since freshman year of high school. I love learning new songs and riffs and getting together with friends for a little jam session. Some of the bands that we like to play songs from are Blink-182, The Strokes, Green Day, The Smashing Pumpkins, and Muse."
+  },
+  {
+    "objectID": "miniproject1.html",
+    "href": "miniproject1.html",
+    "title": "Mini Project 1 Interactive Plots",
+    "section": "",
+    "text": "Mini Project 1 Interactive Plots\n\n# Initial packages required (we'll be adding more)\nlibrary(tidyverse)\nlibrary(mdsr)      # package associated with our MDSR book\nlibrary(RColorBrewer)\nlibrary(viridis)\nlibrary(maps)\nlibrary(sf)\nlibrary(leaflet)\nlibrary(htmltools)\n\n\n# Reading in data table\nairports &lt;- read_csv(\"~/Downloads/Airports.csv\")\n\nRows: 19850 Columns: 107\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (83): the_geom, Rec_Type, Site_Num, Fac_Type, Loc_Id, Eff_Date, Region_C...\ndbl (22): OBJECTID, Elevation, Mag_Var_Ye, Pattern_Al, Dist_City_, Land_Area...\nlgl  (2): Commuter_O, Filler\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\n\n\n# Making a table for how many airports are in each state (includes U.S. territories)\nall_airport_counts &lt;- airports |&gt;\n  filter(Fac_Type == \"AIRPORT\") |&gt;\n  group_by(State_Name) |&gt;\n  mutate(State_Name = str_to_lower(State_Name)) |&gt;\n  summarise(airport_count = n()) \n\n\n# Filtering out U.S. territories\nstate_airport_counts &lt;- all_airport_counts |&gt;\n  filter(!(State_Name %in% c(\"american samoa\", \"guam\", \"midway atoll\", \n                             \"n mariana islands\", \"puerto rico\", \n                             \"virgin islands\", \"wake island\")))\n\n\nus_states &lt;- map_data(\"state\")\nhead(us_states)\n\n       long      lat group order  region subregion\n1 -87.46201 30.38968     1     1 alabama      &lt;NA&gt;\n2 -87.48493 30.37249     1     2 alabama      &lt;NA&gt;\n3 -87.52503 30.37249     1     3 alabama      &lt;NA&gt;\n4 -87.53076 30.33239     1     4 alabama      &lt;NA&gt;\n5 -87.57087 30.32665     1     5 alabama      &lt;NA&gt;\n6 -87.58806 30.32665     1     6 alabama      &lt;NA&gt;\n\n\n\nstates &lt;- read_sf(\"https://rstudio.github.io/leaflet/json/us-states.geojson\")\nclass(states)\n\n[1] \"sf\"         \"tbl_df\"     \"tbl\"        \"data.frame\"\n\nstates\n\nSimple feature collection with 52 features and 3 fields\nGeometry type: MULTIPOLYGON\nDimension:     XY\nBounding box:  xmin: -188.9049 ymin: 17.92956 xmax: -65.6268 ymax: 71.35163\nGeodetic CRS:  WGS 84\n# A tibble: 52 × 4\n   id    name                  density                                  geometry\n   &lt;chr&gt; &lt;chr&gt;                   &lt;dbl&gt;                        &lt;MULTIPOLYGON [°]&gt;\n 1 01    Alabama                 94.6  (((-87.3593 35.00118, -85.60667 34.98475…\n 2 02    Alaska                   1.26 (((-131.602 55.11798, -131.5692 55.28229…\n 3 04    Arizona                 57.0  (((-109.0425 37.00026, -109.048 31.33163…\n 4 05    Arkansas                56.4  (((-94.47384 36.50186, -90.15254 36.4963…\n 5 06    California             242.   (((-123.2333 42.00619, -122.3789 42.0116…\n 6 08    Colorado                49.3  (((-107.9197 41.00391, -105.729 40.99843…\n 7 09    Connecticut            739.   (((-73.05353 42.03905, -71.79931 42.0226…\n 8 10    Delaware               464.   (((-75.41409 39.80446, -75.5072 39.68396…\n 9 11    District of Columbia 10065    (((-77.03526 38.99387, -76.90929 38.8952…\n10 12    Florida                353.   (((-85.49714 30.99754, -85.00421 31.0030…\n# ℹ 42 more rows\n\n\n\n# Joining airport data with state mapping data and creating density intervals\nstate_plotting_sf &lt;- states |&gt;\n  mutate(name = str_to_lower(name)) |&gt;\n  left_join(state_airport_counts, by = c(\"name\" = \"State_Name\")) |&gt;\n  mutate(density_intervals = cut(airport_count, \n                                  breaks = c(0, 20, 50, 100, 200, 500, 1000, 1500, 2000, Inf), \n                                  include.lowest = TRUE)) |&gt;\n  filter(!(name %in% c(\"alaska\", \"hawaii\", \"puerto rico\"))) |&gt;\n  mutate(labels = str_c(name, \": \", airport_count, \" airports\"))\n\n\n# Creating color palette for the number of airports\npal &lt;- colorBin(\"YlOrRd\", domain = state_plotting_sf$airport_count, \n                bins = c(0, 20, 50, 100, 200, 500, 1000, 1500, 2000, Inf))\n\n# Creating labels\nlabels &lt;- lapply(state_plotting_sf$labels, HTML)\n\n\n# Plotting the interactive map\nleaflet(state_plotting_sf) %&gt;%\n  setView(-96, 37.8, 4) %&gt;%\n  addTiles() %&gt;%\n  addPolygons(\n    fillColor = ~pal(airport_count),\n    weight = 2,\n    opacity = 1,\n    color = \"white\",\n    dashArray = \"3\",\n    fillOpacity = 0.7,\n    highlightOptions = highlightOptions(\n      weight = 5,\n      color = \"#666\",\n      dashArray = \"\",\n      fillOpacity = 0.7,\n      bringToFront = TRUE),\n    label = labels,\n    labelOptions = labelOptions(\n      style = list(\"font-weight\" = \"normal\", padding = \"3px 8px\"),\n      textsize = \"15px\",\n      direction = \"auto\")) %&gt;%\n  addLegend(pal = pal, values = ~airport_count, opacity = 0.7, title = NULL,\n            position = \"bottomright\")\n\n\n\n\n\n\nseaplane_counts &lt;- airports |&gt;\n  filter(Fac_Type == \"SEAPLANE BASE\") |&gt;\n  mutate(State_Name = str_to_lower(State_Name)) |&gt;\n  filter(!(State_Name %in% c(\"american samoa\", \"guam\", \"midway atoll\", \n                             \"n mariana islands\", \"puerto rico\", \n                             \"virgin islands\", \"wake island\"))) |&gt;\n  group_by(State_Name) |&gt;\n  summarise(seaplane_counts = n()) |&gt;\n  mutate(has_seaplane_base = if_else(seaplane_counts &gt; 0, \"Yes\", \"No\"))\n\n\n# Get list of states from airport data to be used later\nall_states &lt;- airports |&gt;\n  mutate(State_Name = str_to_lower(State_Name)) |&gt;\n  filter(!(State_Name %in% c(\"american samoa\",\n                             \"guam\",\n                             \"midway atoll\", \n                             \"n mariana islands\",\n                             \"puerto rico\", \n                             \"virgin islands\",\n                             \"wake island\"))) |&gt;\n  distinct(State_Name)\n\n\n# Get the seaplane counts per state\nseaplane_counts &lt;- airports |&gt;\n  filter(Fac_Type == \"SEAPLANE BASE\") |&gt;\n  mutate(State_Name = str_to_lower(State_Name)) |&gt;\n  filter(!(State_Name %in% c(\"american samoa\",\n                             \"guam\",\n                             \"midway atoll\", \n                             \"n mariana islands\",\n                             \"puerto rico\", \n                             \"virgin islands\",\n                             \"wake island\"))) |&gt;\n  group_by(State_Name) |&gt;\n  summarise(seaplane_counts = n())\n\n\n# Join the counts with the list of states and filling missing values with 0\nstate_has_seaplane &lt;- all_states |&gt;\n  left_join(seaplane_counts, by = \"State_Name\") |&gt;\n  mutate(seaplane_counts = if_else(is.na(seaplane_counts), 0, seaplane_counts),\n         has_seaplane_base = if_else(seaplane_counts &gt; 0, \"Yes\", \"No\")) |&gt;\n  arrange(State_Name)\n\n\n# Joining seaplane base data with state mapping data\nstate_plotting_sf &lt;- states |&gt;\n  mutate(name = str_to_lower(name)) |&gt;\n  left_join(state_has_seaplane, by = c(\"name\" = \"State_Name\")) |&gt;\n  filter(!(name %in% c(\"alaska\", \"hawaii\", \"puerto rico\"))) |&gt;\n  mutate(labels = str_c(name, \": \", has_seaplane_base))\n\n# Creating color palette for legend\npal &lt;- colorFactor(c(\"purple\", \"green\"), domain = state_plotting_sf$has_seaplane_base)\n\n# Creating labels\nlabels &lt;- lapply(state_plotting_sf$labels, HTML)\n\n# Create interactive map\nleaflet(state_plotting_sf) %&gt;%\n  setView(-96, 37.8, 4) %&gt;%\n  addTiles() %&gt;%\n  addPolygons(\n    fillColor = ~pal(has_seaplane_base),\n    weight = 2,\n    opacity = 1,\n    color = \"white\",\n    dashArray = \"3\",\n    fillOpacity = 0.7,\n    highlightOptions = highlightOptions(\n      weight = 5,\n      color = \"#666\",\n      dashArray = \"\",\n      fillOpacity = 0.7,\n      bringToFront = TRUE),\n    label = labels,\n    labelOptions = labelOptions(\n      style = list(\"font-weight\" = \"normal\", padding = \"3px 8px\"),\n      textsize = \"15px\",\n      direction = \"auto\")) %&gt;%\n  addLegend(pal = pal, values = ~has_seaplane_base, opacity = 0.7, title = NULL,\n            position = \"bottomright\")\n\n\n\n\n\n\n\nMini Project 1 Static Plots\n\n# Initial packages required (we'll be adding more)\nlibrary(tidyverse)\nlibrary(mdsr)      # package associated with our MDSR book\nlibrary(RColorBrewer)\nlibrary(viridis)\nlibrary(maps)\nlibrary(sf)\nlibrary(leaflet)\nlibrary(htmltools)\n\nI am using data about airports in the United States published by the Bureau of Transportation Statistics. Source: https://data.bts.gov/Aviation/Airports/kfcv-nyy3/about_data\n\n# Reading in data table\nairports &lt;- read_csv(\"~/Downloads/Airports.csv\")\n\nRows: 19850 Columns: 107\n── Column specification ────────────────────────────────────────────────────────\nDelimiter: \",\"\nchr (83): the_geom, Rec_Type, Site_Num, Fac_Type, Loc_Id, Eff_Date, Region_C...\ndbl (22): OBJECTID, Elevation, Mag_Var_Ye, Pattern_Al, Dist_City_, Land_Area...\nlgl  (2): Commuter_O, Filler\n\nℹ Use `spec()` to retrieve the full column specification for this data.\nℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.\n\n\nThe first plot I will make is one that will show how many airports are in each state, excluding Alaska and Hawaii.\n\n# Making a table for how many airports are in each state (includes U.S. territories)\nall_airport_counts &lt;- airports |&gt;\n  filter(Fac_Type == \"AIRPORT\") |&gt;\n  group_by(State_Name) |&gt;\n  mutate(State_Name = str_to_lower(State_Name)) |&gt;\n  summarise(airport_count = n()) \n\n\n# Filtering out U.S. territories\nstate_airport_counts &lt;- all_airport_counts |&gt;\n  filter(!(State_Name %in% c(\"american samoa\",\n                             \"guam\", \n                             \"midway atoll\", \n                             \"n mariana islands\",\n                             \"puerto rico\", \n                             \"virgin islands\",\n                             \"wake island\")))\n\n\n# Loading state mapping data\nus_states &lt;- map_data(\"state\")\nhead(us_states)\n\n       long      lat group order  region subregion\n1 -87.46201 30.38968     1     1 alabama      &lt;NA&gt;\n2 -87.48493 30.37249     1     2 alabama      &lt;NA&gt;\n3 -87.52503 30.37249     1     3 alabama      &lt;NA&gt;\n4 -87.53076 30.33239     1     4 alabama      &lt;NA&gt;\n5 -87.57087 30.32665     1     5 alabama      &lt;NA&gt;\n6 -87.58806 30.32665     1     6 alabama      &lt;NA&gt;\n\n\n\n# Joining airport data with state mapping data and plotting\nstate_airport_counts |&gt;\n  right_join(us_states, by = c(\"State_Name\" = \"region\")) |&gt;\n  rename(region = State_Name) |&gt;\n  ggplot(mapping = aes(x = long,\n                       y = lat,\n                       group = group)) + \n  geom_polygon(aes(fill = airport_count), color = \"black\") +\n  labs(title = \"Number of Airports in Each State\",\n       fill = \"Number of Airports\") +\n  coord_map() +\n  theme_void() +\n  scale_fill_viridis()\n\n\n\n\n\n\n\n\nThis is a choropleth map of the United States (excluding Alaska and Hawaii) showing the distribution of airports in each state, with each stated colored according to the number of airports that are in the state. The map utilizes a color gradient that goes from purple to yellow, where purple and darker shades of blue represent lower airport counts and lighter shades of blue, green, and yellow represent higher airport counts. The scale on the color gradient indicates the range of the number of airports in a state goes from 0 to 1500. Texas is a notable standout as it is the only state colored yellow, indicating it has the most amount of airports out of the rest of the states. The plot shows that states colored lighter blue like California, Florida, and Illinois have a greater number of airports compared to states colored dark purple like Vermont, New Hampshire, and Wyoming.\nThe next plot I will make will show whether or not a state has at least one seaplane base.\n\n# Get list of states from airport data to be used later\nall_states &lt;- airports |&gt;\n  mutate(State_Name = str_to_lower(State_Name)) |&gt;\n  filter(!(State_Name %in% c(\"american samoa\",\n                             \"guam\",\n                             \"midway atoll\", \n                             \"n mariana islands\",\n                             \"puerto rico\", \n                             \"virgin islands\",\n                             \"wake island\"))) |&gt;\n  distinct(State_Name)\n\n\n# Get the seaplane counts per state\nseaplane_counts &lt;- airports |&gt;\n  filter(Fac_Type == \"SEAPLANE BASE\") |&gt;\n  mutate(State_Name = str_to_lower(State_Name)) |&gt;\n  filter(!(State_Name %in% c(\"american samoa\",\n                             \"guam\",\n                             \"midway atoll\", \n                             \"n mariana islands\",\n                             \"puerto rico\", \n                             \"virgin islands\",\n                             \"wake island\"))) |&gt;\n  group_by(State_Name) |&gt;\n  summarise(seaplane_counts = n())\n\n\n# Join the counts with the list of states and filling missing values with 0\nstate_has_seaplane &lt;- all_states |&gt;\n  left_join(seaplane_counts, by = \"State_Name\") |&gt;\n  mutate(seaplane_counts = if_else(is.na(seaplane_counts), 0, seaplane_counts),\n         has_seaplane_base = if_else(seaplane_counts &gt; 0, \"Yes\", \"No\")) |&gt;\n  arrange(State_Name)\n\n\n# Plotting the results\nstate_has_seaplane |&gt;\n  right_join(us_states, by = c(\"State_Name\" = \"region\")) |&gt;\n  rename(region = State_Name) |&gt;\n  ggplot(mapping = aes(x = long,\n                       y = lat,\n                       group = group)) +\n  geom_polygon(aes(fill = has_seaplane_base), color = \"darkgrey\", linewidth = 0.2) +\n  labs(title = \"Presence of Seaplane Base in Each State\",\n       fill = \"Has Seaplane Base\") +\n  coord_map() + \n  theme_void() +  \n  scale_fill_manual(values = c(\"green\", \"purple\"))\n\n\n\n\n\n\n\n\nThis is a map of the United States (excluding Alaska and Hawaii) that shows whether a state contains a seaplane base or not. States that do not contain a seaplane base are colored green, and states that do contain a seaplane base are colored purple. The map shows that a large majority of the mainland states have at least one seaplane base with only a handful of states do not have a seaplane base. The map shows that the states that do not have a seaplane base are Utah, Wyoming, Arizona, Nevada, North Dakota, Iowa, Kansas, Arkansas, Mississippi, Kentucky, and Delaware."
+  },
+  {
+    "objectID": "miniproject1.html#saw-2004",
+    "href": "miniproject1.html#saw-2004",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Origin Trap\nThe original movie that started it all. With a fresh concept and one of the most iconic twists in horror history, this film set the standard. Its gritty style, strong performances, and suspense make it nearly impossible to beat.\n\n“How much blood will you shed to stay at the top?”"
+  },
+  {
+    "objectID": "miniproject1.html#saw-ii-2005",
+    "href": "miniproject1.html#saw-ii-2005",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The House of Horrors\nJigsaw ups the stakes with a group trap that delves deeper into his twisted ideology. The needle pit scene alone has left audiences haunted for years.\n\n“When the game expands, do the thrills stay sharp?”"
+  },
+  {
+    "objectID": "miniproject1.html#saw-vi-2009",
+    "href": "miniproject1.html#saw-vi-2009",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: Insurance Scandal\nJigsaw takes on the healthcare system, and the social commentary makes this one stand out. The traps are especially brutal and serve as a return to form.\n\n“What price are you willing to pay when greed is on the line?”"
+  },
+  {
+    "objectID": "miniproject1.html#saw-iii-2006",
+    "href": "miniproject1.html#saw-iii-2006",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Surgery Challenge\nAn intense emotional ride where Jigsaw’s moral code is truly put to the test. The medical themes add a unique layer to the horror.\n\n“How much can the human body endure in the name of retribution?”"
+  },
+  {
+    "objectID": "miniproject1.html#saw-iv-2007",
+    "href": "miniproject1.html#saw-iv-2007",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: Legacy of Pain\nAs we dive into Jigsaw’s backstory, the stakes feel more personal, though the story gets a bit complex. It’s a critical piece of the puzzle for fans.\n\n“Can legacy bring clarity, or just more suffering?”"
+  },
+  {
+    "objectID": "miniproject1.html#jigsaw-2017",
+    "href": "miniproject1.html#jigsaw-2017",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Copycat Conundrum\nA newer take with fresh faces, but it lacks the grit of the originals. However, it does keep you guessing.\n\n“What happens when others try to play the master’s game?”"
+  },
+  {
+    "objectID": "miniproject1.html#saw-v-2008",
+    "href": "miniproject1.html#saw-v-2008",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Trust Trap\nWhile it has memorable moments, this entry is known for a less inventive plot. Still, it adds important context to the franchise’s lore.\n\n“When trust is tested, who will survive?”"
+  },
+  {
+    "objectID": "miniproject1.html#saw-3d-2010",
+    "href": "miniproject1.html#saw-3d-2010",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Spectacle Over Substance\nAttempting to bring 3D effects to the franchise, this one leans heavily on visuals, sacrificing some of the franchise’s psychological edge.\n\n“What’s left when visuals try to overpower the story?”"
+  },
+  {
+    "objectID": "miniproject1.html#spiral-2021",
+    "href": "miniproject1.html#spiral-2021",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Copycat Killer\nWith a different direction and a new detective story, Spiral is more of a spinoff. It lacks the intensity of the classic Saw films.\n\n“Can the legacy be redefined, or will it fall apart?”\n\n\nThis ranking represents my personal take on the Saw movies. Agree? Disagree? Let the games begin…"
+  },
+  {
+    "objectID": "saw.html",
+    "href": "saw.html",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "The Saw movie franchise is my favorite movie franchise of all time. This is my ranking of each movie I have seen so far (Saw, Saw II, Saw III, Saw IV, Saw V, Saw VI, and Saw 3D).\n\n\n\nEasily the best movie in the franchise. A great introduction to the main villain, Jigsaw. It has my favorite plot twist of all time that quite literally left my jaw on the floor when I first saw it.\nFavorite quote:\n\n“Yes, I’m sick, officer. Sick from the disease eating away at me inside. Sick of people who don’t appreciate their blessings. Sick of those who scoff at the suffering of others. I’m sick of it all!”\n\n\n\n\n\nSome fans say this is their favorite movie in the franchise. While I am not one of those people, I definitely understand where they are coming from. Saw II offers a different setting for those in the game, which becomes a blueprint for later movies in the series. It has a great balance between learning more about Jigsaw and showing the people in the traps as they progress throughout the house that is slowly killing them.\nFavorite quote:\n\n“I want to play a game. The rules are simple. All you have to do is sit here and talk to me. Listen to me. If you do that long enough you will find your son in a safe and secure state. We haven’t been properly introduced. My name’s John.”\n\n\n\n\n\nThe reason Saw IV ranks this high is because of its commentary on the health insurance industry. The game that the main victim is put in feels ever more personal for Jigsaw as we learn more than ever about his back story. The plot twist at the end felt like satisfying closure after six movies in the franchise.\nFavorite quote:\n\n“Don’t talk to me about money. I have money.”\n\n\n\n\n\nThe plot of this movie focuses less on figuring out “Who is Jigsaw?” and focuses more on emotion. The main victim has to face difficult decisions throughout the movie, which had me feeling sad for him at times. However, this is where I feel the quality of the movies starts to steadily decline.\nFavorite quote:\n\n“My 20 second analysis without any medical equipment is that his brain is herniating.”\n\n\n\n\n\nEasily one of the more forgettable movies in the franchise. I had to look up what happened in this movie even though I have seen it multiple times. Quality is lacking compared to its predecessors. The plot twist leaves for much to be desired. There is not much to say other than the non-linear plot line with Saw III was the most interesting thing about this movie.\n\n“You know never to go through an unsecured door. Ever.”\n\n\n\n\n\nTest: The Trust Trap\nThis movie is acceptable for what it is. It feels like a filler movie just to move the plot along and keep the franchise alive. Again, we see the decline of quality and questionable acting. The plot focuses more on a rivalry between Jigsaw’s accomplice and an FBI agent, which diverts from the plot of previous movies. Not to say that this is a bad thing, just not what I really signed up for when it comes to a Saw movie.\n\n“Jigsaw doesn’t make mistakes.”\n\n\n\n\n\nThe most recent movie I have seen on the list and also my least favorite, so far. The plot and pacing left me discombobulated, and the uninspiring acting left me wanting more. Too many moments of cheesy 3D uses that did not the aesthetics of the movie.\nFavorite quote:\n\nnone"
+  },
+  {
+    "objectID": "saw.html#saw-2004",
+    "href": "saw.html#saw-2004",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Origin Trap\nThe original movie that started it all. With a fresh concept and one of the most iconic twists in horror history, this film set the standard. Its gritty style, strong performances, and suspense make it nearly impossible to beat.\n\n“How much blood will you shed to stay at the top?”"
+  },
+  {
+    "objectID": "saw.html#saw-ii-2005",
+    "href": "saw.html#saw-ii-2005",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The House of Horrors\nJigsaw ups the stakes with a group trap that delves deeper into his twisted ideology. The needle pit scene alone has left audiences haunted for years.\n\n“When the game expands, do the thrills stay sharp?”"
+  },
+  {
+    "objectID": "saw.html#saw-vi-2009",
+    "href": "saw.html#saw-vi-2009",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: Insurance Scandal\nJigsaw takes on the healthcare system, and the social commentary makes this one stand out. The traps are especially brutal and serve as a return to form.\n\n“What price are you willing to pay when greed is on the line?”"
+  },
+  {
+    "objectID": "saw.html#saw-iii-2006",
+    "href": "saw.html#saw-iii-2006",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Surgery Challenge\nAn intense emotional ride where Jigsaw’s moral code is truly put to the test. The medical themes add a unique layer to the horror.\n\n“How much can the human body endure in the name of retribution?”"
+  },
+  {
+    "objectID": "saw.html#saw-iv-2007",
+    "href": "saw.html#saw-iv-2007",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: Legacy of Pain\nAs we dive into Jigsaw’s backstory, the stakes feel more personal, though the story gets a bit complex. It’s a critical piece of the puzzle for fans.\n\n“Can legacy bring clarity, or just more suffering?”"
+  },
+  {
+    "objectID": "saw.html#jigsaw-2017",
+    "href": "saw.html#jigsaw-2017",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Copycat Conundrum\nA newer take with fresh faces, but it lacks the grit of the originals. However, it does keep you guessing.\n\n“What happens when others try to play the master’s game?”"
+  },
+  {
+    "objectID": "saw.html#saw-v-2008",
+    "href": "saw.html#saw-v-2008",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Trust Trap\nWhile it has memorable moments, this entry is known for a less inventive plot. Still, it adds important context to the franchise’s lore.\n\n“When trust is tested, who will survive?”"
+  },
+  {
+    "objectID": "saw.html#saw-3d-2010",
+    "href": "saw.html#saw-3d-2010",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Spectacle Over Substance\nAttempting to bring 3D effects to the franchise, this one leans heavily on visuals, sacrificing some of the franchise’s psychological edge.\n\n“What’s left when visuals try to overpower the story?”"
+  },
+  {
+    "objectID": "saw.html#spiral-2021",
+    "href": "saw.html#spiral-2021",
+    "title": "Ranking the Saw Movies",
+    "section": "",
+    "text": "Test: The Copycat Killer\nWith a different direction and a new detective story, Spiral is more of a spinoff. It lacks the intensity of the classic Saw films.\n\n“Can the legacy be redefined, or will it fall apart?”\n\n\nThis ranking represents my personal take on the Saw movies. Agree? Disagree? Let the games begin…"
+  },
+  {
+    "objectID": "saw.html#saw",
+    "href": "saw.html#saw",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "Easily the best movie in the franchise. A great introduction to the main villain, Jigsaw. It has my favorite plot twist of all time that quite literally left my jaw on the floor when I first saw it.\nFavorite quote:\n\n“Yes, I’m sick, officer. Sick from the disease eating away at me inside. Sick of people who don’t appreciate their blessings. Sick of those who scoff at the suffering of others. I’m sick of it all!”"
+  },
+  {
+    "objectID": "saw.html#saw-ii",
+    "href": "saw.html#saw-ii",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "Some fans say this is their favorite movie in the franchise. While I am not one of those people, I definitely understand where they are coming from. Saw II offers a different setting for those in the game, which becomes a blueprint for later movies in the series. It has a great balance between learning more about Jigsaw and showing the people in the traps as they progress throughout the house that is slowly killing them.\nFavorite quote:\n\n“I want to play a game. The rules are simple. All you have to do is sit here and talk to me. Listen to me. If you do that long enough you will find your son in a safe and secure state. We haven’t been properly introduced. My name’s John.”"
+  },
+  {
+    "objectID": "saw.html#saw-vi",
+    "href": "saw.html#saw-vi",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "The reason Saw IV ranks this high is because of its commentary on the health insurance industry. The game that the main victim is put in feels ever more personal for Jigsaw as we learn more than ever about his back story. The plot twist at the end felt like satisfying closure after six movies in the franchise.\nFavorite quote:\n\n“Don’t talk to me about money. I have money.”"
+  },
+  {
+    "objectID": "saw.html#saw-iii",
+    "href": "saw.html#saw-iii",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "The plot of this movie focuses less on figuring out “Who is Jigsaw?” and focuses more on emotion. The main victim has to face difficult decisions throughout the movie, which had me feeling sad for him at times. However, this is where I feel the quality of the movies starts to steadily decline.\nFavorite quote:\n\n“My 20 second analysis without any medical equipment is that his brain is herniating.”"
+  },
+  {
+    "objectID": "saw.html#saw-iv",
+    "href": "saw.html#saw-iv",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "Easily one of the more forgettable movies in the franchise. I had to look up what happened in this movie even though I have seen it multiple times. Quality is lacking compared to its predecessors. The plot twist leaves for much to be desired. There is not much to say other than the non-linear plot line with Saw III was the most interesting thing about this movie.\n\n“You know never to go through an unsecured door. Ever.”"
+  },
+  {
+    "objectID": "saw.html#saw-v",
+    "href": "saw.html#saw-v",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "Test: The Trust Trap\nThis movie is acceptable for what it is. It feels like a filler movie just to move the plot along and keep the franchise alive. Again, we see the decline of quality and questionable acting. The plot focuses more on a rivalry between Jigsaw’s accomplice and an FBI agent, which diverts from the plot of previous movies. Not to say that this is a bad thing, just not what I really signed up for when it comes to a Saw movie.\n\n“Jigsaw doesn’t make mistakes.”"
+  },
+  {
+    "objectID": "saw.html#saw-3d",
+    "href": "saw.html#saw-3d",
+    "title": "The Saw Movies",
+    "section": "",
+    "text": "The most recent movie I have seen on the list and also my least favorite, so far. The plot and pacing left me discombobulated, and the uninspiring acting left me wanting more. Too many moments of cheesy 3D uses that did not the aesthetics of the movie.\nFavorite quote:\n\nnone"
+  },
+  {
+    "objectID": "miniproject2.html",
+    "href": "miniproject2.html",
+    "title": "SDS: Mini Project 2",
+    "section": "",
+    "text": "library(tidyverse)\n\n── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──\n✔ dplyr     1.1.4     ✔ readr     2.1.5\n✔ forcats   1.0.0     ✔ stringr   1.5.1\n✔ ggplot2   3.5.1     ✔ tibble    3.2.1\n✔ lubridate 1.9.3     ✔ tidyr     1.3.1\n✔ purrr     1.0.2     \n── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──\n✖ dplyr::filter() masks stats::filter()\n✖ dplyr::lag()    masks stats::lag()\nℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors\n\nlibrary(polite)\nlibrary(gutenbergr)\nlibrary(htmltools)\nlibrary(rvest)\n\n\nAttaching package: 'rvest'\n\nThe following object is masked from 'package:readr':\n\n    guess_encoding\n\n\n\n#Scrape the top 100 books from the past 30 days\nget_gutenberg_top100 &lt;- function() {\n  if (robotstxt::paths_allowed(\"https://www.gutenberg.org/browse/scores/top#books-last30\") == \"TRUE\") {\n    gutenberg_page &lt;- read_html(\"https://www.gutenberg.org/browse/scores/top#books-last30\")\n    books_last30 &lt;- html_nodes(gutenberg_page, \"#books-last30+ ol li\")\n    books_last30_text &lt;- html_text(books_last30)\n    books_last30_tbl &lt;- tibble(\n  title = gsub(\" by.*\", \"\", books_last30_text),\n  author = gsub(\".* by \", \"\", books_last30_text),\n  popularity = seq.int(1,100)\n)\n    \n  df_books30 &lt;&lt;- books_last30_tbl\n  }\n}\n\nget_gutenberg_top100()\n\n\n www.gutenberg.org                      \n\n\n\ntop_100_books &lt;- gutenberg_works() |&gt;\n  filter(title %in% df_books30$title)\n\n#top_100_text &lt;- gutenberg_download(top_100_books$gutenberg_id, meta_fields = c(\"title\", \"author\"))\n\n#top_100_data &lt;- top_100_text |&gt;\n#  mutate(text = na_if(text, \"\")) |&gt;\n#  na.omit() |&gt;\n#  group_by(title) |&gt;\n#  mutate(line_num = row_number()) |&gt;\n#  ungroup()\n\n\nbook_ids &lt;- top_100_books$gutenberg_id\nbooks_with_warnings &lt;- list()\nbooks_with_warningsb &lt;- list()\ntop_100_data &lt;- data.frame()\n\ndownload_book &lt;- function(book_id, mirror = \"http://aleph.gutenberg.org\") {\n  tryCatch(\n    {\n      data &lt;- gutenberg_download(book_id, meta_fields = c(\"title\", \"author\"), mirror = mirror)\n      top_100_data &lt;&lt;- bind_rows(top_100_data, data)\n    },\n    warning = function(w) {\n      books_with_warnings &lt;&lt;- c(books_with_warnings, book_id)\n      message(\"Warning for book ID: \", book_id) \n      return(NULL)\n    }\n  )\n}\n\nbook_data &lt;- lapply(book_ids, download_book)\n\nWarning for book ID: 11\n\n\nWarning for book ID: 46\n\n\nWarning for book ID: 100\n\n\nWarning for book ID: 120\n\n\nWarning for book ID: 145\n\n\nWarning for book ID: 174\n\n\nWarning for book ID: 345\n\n\nWarning for book ID: 730\n\n\nWarning for book ID: 1342\n\n\nWarning for book ID: 1513\n\n\nWarning for book ID: 2148\n\n\nWarning for book ID: 2199\n\n\nWarning for book ID: 2489\n\n\nWarning for book ID: 2641\n\n\nWarning for book ID: 19508\n\n\nWarning for book ID: 19640\n\n\nWarning for book ID: 41445\n\n\nWarning for book ID: 43936\n\n\nWarning for book ID: 51713\n\n\nWarning for book ID: 64317\n\n\nWarning for book ID: 67098\n\n\nWarning for book ID: 67979\n\nprint(\"Books with warnings:\")\n\n[1] \"Books with warnings:\"\n\nprint(books_with_warnings)\n\n[[1]]\n[1] 11\n\n[[2]]\n[1] 46\n\n[[3]]\n[1] 100\n\n[[4]]\n[1] 120\n\n[[5]]\n[1] 145\n\n[[6]]\n[1] 174\n\n[[7]]\n[1] 345\n\n[[8]]\n[1] 730\n\n[[9]]\n[1] 1342\n\n[[10]]\n[1] 1513\n\n[[11]]\n[1] 2148\n\n[[12]]\n[1] 2199\n\n[[13]]\n[1] 2489\n\n[[14]]\n[1] 2641\n\n[[15]]\n[1] 19508\n\n[[16]]\n[1] 19640\n\n[[17]]\n[1] 41445\n\n[[18]]\n[1] 43936\n\n[[19]]\n[1] 51713\n\n[[20]]\n[1] 64317\n\n[[21]]\n[1] 67098\n\n[[22]]\n[1] 67979\n\ntop_100_data &lt;- top_100_data |&gt;\n  mutate(text = na_if(text, \"\")) |&gt; #changing empty lines to NA\n  na.omit() |&gt; #removing those empty (NA) lines\n  group_by(title) |&gt;\n  mutate(line_num = row_number()) |&gt; #adding line number (starts at 1 for each book)\n  ungroup()\n\n\n#print(top_100_data)\n#Note: this dataset is way to long to render to pdf. \n\n#For viewing\ntop_100_line_1 &lt;- top_100_data |&gt;\n  filter(line_num == 1)\nhead(top_100_line_1)\n\n# A tibble: 6 × 5\n  gutenberg_id text                                        title author line_num\n         &lt;int&gt; &lt;chr&gt;                                       &lt;chr&gt; &lt;chr&gt;     &lt;int&gt;\n1           33 The Scarlet Letter                          The … Hawth…        1\n2           41 The Legend of Sleepy Hollow                 The … Irvin…        1\n3           42 [Illustration]                              The … Steve…        1\n4           45 ANNE OF GREEN GABLES                        Anne… Montg…        1\n5          150 ******************************************… The … Plato         1\n6          244 A STUDY IN SCARLET                          A St… Doyle…        1"
   }
 ]
