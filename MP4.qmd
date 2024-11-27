@@ -1,0 +1,340 @@
+---
+title: "Mini Project 4"
+format:
+  html: default
+---
+
+I don't know if I will end up needing all of these packages, but it's better to be safe than sorry.
+
+```{r}
+#| message: false
+#| warning: false
+library(purrr)
+library(tidyverse)
+library(polite)
+library(rvest)
+library(dplyr)
+library(stringr)
+library(tibble)
+library(tidytext)
+library(textdata)
+library(wordcloud)
+library(wordcloud2)
+library(viridis)
+library(ggthemes)
+library(ggplot2)
+library(ggraph)
+library(igraph)
+```
+
+For my mini project, I am going to be looking at Rotten Tomatoes user and critic reviews from the first 7 movies in the Saw franchise. It is pretty much general concensus from fans of the franchise that the quality of films decreases as each movie progresses, so I thought I would see if the reviews on Rotten Tomatoes reflected that.
+
+Note: I am only taking reviews of the first 7 movies because those are the ones that I have seen so far.
+
+
+```{r}
+saw_url_endings <- c("saw", "saw_ii", "saw_3", "saw_4", "saw_v", "saw_vi", "saw3d")
+```
+These are the endings for each URL corresponding to each Saw movie. I got these manually from looking at each page for each movie on Rotten Tomatoes. (Interesting how some of them use roman numerals and some use regular numbers).
+
+The first thing that I will do is make sure that I am allowed to scrape data from each url.
+
+```{r}
+check_if_allowed <- function(url_ending) {
+  url <- paste0("https://www.rottentomatoes.com/m/", url_ending)
+  robotstxt::paths_allowed(url)
+}
+```
+
+```{r}
+results <- map(saw_url_endings, check_if_allowed)
+print(results)
+```
+
+Yay! Let's proceed...
+
+
+I will create a function that takes a string that represents the ending of the url that is to be added onto the base url for Rotten Tomatoes. Then, we will scrape the review, along with the type of review (critic or user) and the movie in which it is a review for, and put it together in a tibble.
+
+```{r}
+scrape_reviews <- function(url_ending) {
+  base_url <- "https://www.rottentomatoes.com/m/"
+  url <- paste0(base_url, url_ending)
+  
+  movie <- url |>
+    bow() |> 
+    scrape()
+  
+  top_reviews_url <- paste0(url, "/reviews?type=top_critics")
+  top_reviews_page <- top_reviews_url |> 
+    bow() |> 
+    scrape()
+  top_reviews <- html_nodes(top_reviews_page, ".review-text") |> 
+    html_text() |> 
+    str_trim()
+  
+  user_reviews_url <- paste0(url, "/reviews?type=user")
+  user_reviews_page <- user_reviews_url |> 
+    bow() |> 
+    scrape()
+  user_reviews <- html_nodes(user_reviews_page, ".js-review-text") |> 
+    html_text() |> 
+    str_trim()
+  
+  reviews <- tibble(
+    type = c(rep("critic", length(top_reviews)), rep("user", length(user_reviews))),
+    review = c(str_to_lower(top_reviews), str_to_lower(user_reviews)),
+    movie = url_ending
+  )
+  
+  return(reviews)
+}
+```
+
+
+We can use this function by imputing all of the url endings from before into this function to get the corresponding reviews. 
+
+```{r}
+all_reviews <- bind_rows(lapply(saw_url_endings, scrape_reviews)) |>
+  filter(str_trim(review) != "") # removing blank reviews
+```
+
+```{r}
+head(all_reviews)
+```
+
+
+Now, we have our data.
+
+The first thing I am curious about is the number of negative reviews for each movie. To determine this, I will ask ChatGPT to generate a list of words that would indicate a negative review for a movie. It gave me several different categories to work with and plenty of words. I put these words into vectors based on the category.
+
+```{r}
+poor_quality <- c(
+  "boring", "predictable", "dull", "cheap", "lazy", 
+  "unimaginative", "weak", "shallow", "forgettable"
+)
+
+plot_criticism <- c(
+  "confusing", "nonsensical", "contrived", "illogical", 
+  "disjointed", "unrealistic", "forced", "flat"
+)
+
+acting_criticism <- c(
+  "wooden", "unconvincing", "overacted", "stereotypical", 
+  "unlikeable", "forgettable", "clichéd"
+)
+
+pacing_criticism <- c(
+  "slow", "dragging", "tedious", "repetitive", "overdone"
+)
+
+horror_criticism <- c(
+  "not scary", "tame", "gimmicky", "excessive", "gross", 
+  "cheap scares", "too gory", "shock value"
+)
+
+negative_sentiment <- c(
+  "disappointing", "awful", "terrible", "horrible", 
+  "poor", "bad", "waste"
+)
+```
+
+Combine all of the words together, and create a regular expression.
+```{r}
+all_negative_words <- c(
+  poor_quality, plot_criticism, acting_criticism, 
+  pacing_criticism, horror_criticism, negative_sentiment
+)
+
+negative_words_regex <- paste(all_negative_words, collapse = "|")
+```
+
+```{r}
+negative_reviews <- all_reviews |>
+  filter(str_detect(review, negative_words_regex))
+```
+
+```{r}
+head(negative_reviews)
+```
+
+Here are all of the negative reviews we gathered.
+
+I am interested to see how many negative reviews each movie has from users and critics.
+
+```{r}
+negative_review_counts <- negative_reviews |>
+  group_by(movie) |>
+  summarise(negative_count = n()) |>
+  arrange(desc(negative_count))
+
+negative_review_counts
+```
+
+```{r}
+ggplot(negative_review_counts, aes(x = reorder(movie, -negative_count), y = negative_count)) +
+  geom_col(fill = "red") +
+  labs(
+    title = "Number of negative reviews for each Saw movie",
+    x = "Movie",
+    y = "Count of Negative Reviews"
+  )
+```
+
+Interesting, it looks like Saw V has the most negative reviews out of the seven movies. I am also not surprised to see that Saw 3D is second.
+
+
+The next thing I want to know the difference between the number of negative critic reviews and negative user reviews. To do this, I want to use bing sentiment analysis. 
+
+The first step is to make all_reviews 'tidy'.
+
+```{r}
+tidy_reviews <- all_reviews |>
+  mutate(row_id = row_number()) |>
+  unnest_tokens(word, review, token = "words")
+```
+
+Join the bing sentiments tibble with our tidy data to label each uncommon word as either positive or negative.
+
+```{r}
+bing_sentiments <- get_sentiments("bing")
+tidy_reviews_bing <- tidy_reviews |>
+  inner_join(bing_sentiments, by = "word")
+```
+
+Determine the average sentiment of each movie.
+
+```{r}
+sentiment_summary <- tidy_reviews_bing |>
+  mutate(sentiment_value = ifelse(sentiment == "positive", 1, -1)) |>
+  group_by(movie, type) |>
+  summarize(avg_sentiment = mean(sentiment_value, na.rm = TRUE)) |>
+  arrange(desc(avg_sentiment))
+sentiment_summary
+```
+By sorting by average sentiment, it is clear that users are speaking better of the entire Saw franchise compared to the critics. The lowest average sentiment from the users was for Saw 3 at -0.129 where the highest average sentiment from the critics was for Saw 2 at -0.1784.
+
+
+```{r}
+ggplot(sentiment_summary, aes(x = movie, y = avg_sentiment, color = type, group = type)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3) +
+  theme_minimal() +
+  labs(
+    title = "Sentiment across the Saw movies",
+    x = "Movie",
+    y = "Average Sentiment",
+    color = "review type"
+  ) +
+  scale_x_discrete(limits = c("saw", "saw_ii", "saw_3", "saw_4", "saw_v", "saw_vi", "saw3d"))
+
+```
+
+This plot shows the average sentiment of critics and users for each Saw movie. The most interesting piece of this to me is how different the average sentiments are between critics and users for Saw 6. Also, it seems that the critics and users received Saw 3D oppositely as well.
+
+
+
+I will see what words are commonly used in the reviews.
+```{r}
+smart_stopwords <- get_stopwords(source = "smart")
+
+tidy_reviews_count <- tidy_reviews |>
+  anti_join(smart_stopwords) |>
+  count(word, movie, sort = TRUE)
+
+tidy_reviews_count
+```
+
+```{r}
+tidy_reviews |>
+  inner_join(bing_sentiments) |>
+  count(movie, index = row_id, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
+  mutate(sentiment = positive - negative,
+         movie = factor(movie, levels = c("saw", "saw_ii", "saw_3", "saw_4", "saw_v", "saw_vi", "saw3d"))) |>
+  ggplot(aes(x = index, y = sentiment, fill = movie)) +
+    geom_col(show.legend = FALSE) +
+    facet_wrap(~movie, ncol = 2, scales = "free_x")
+```
+This plot shows the sentiment of each movie review (critics and users) for each movie individually. In other words, each bar represents one review. It looks like Saw 4 and Saw 3D have the most negative reviews, and it looks like Saw 2 has the most positive reviews.
+
+
+We can also separate the reviews by type.
+
+```{r}
+tidy_reviews |>
+  filter(type == "critic") |>
+  inner_join(bing_sentiments) |>
+  count(movie, index = row_id, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
+  mutate(sentiment = positive - negative,
+         movie = factor(movie, levels = c("saw", "saw_ii", "saw_3", "saw_4", "saw_v", "saw_vi", "saw3d"))) |>
+  ggplot(aes(x = index, y = sentiment, fill = movie)) +
+    geom_col(show.legend = FALSE) +
+    facet_wrap(~movie, ncol = 2, scales = "free_x")
+```
+
+This plot shows the sentiment of critic reviews for each movie individually.
+
+```{r}
+tidy_reviews |>
+  filter(type == "user") |>
+  inner_join(bing_sentiments) |>
+  count(movie, index = row_id, sentiment) |>
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) |>
+  mutate(sentiment = positive - negative,
+         movie = factor(movie, levels = c("saw", "saw_ii", "saw_3", "saw_4", "saw_v", "saw_vi", "saw3d"))) |>
+  ggplot(aes(x = index, y = sentiment, fill = movie)) +
+    geom_col(show.legend = FALSE) +
+    facet_wrap(~movie, ncol = 2, scales = "free_x")
+```
+This plot shows the sentiment of user reviews for each movie individually.
+
+
+
+
+
+
+Just for fun, I wanted to look at the bigrams for all of the reviews.
+
+```{r}
+tidy_reviews_ngram <- all_reviews |>
+  unnest_tokens(bigram, review, token = "ngrams", n = 2) |>
+  filter(bigram != "NA")
+
+tidy_reviews_ngram
+```
+
+```{r}
+bigrams_filtered <- tidy_reviews_ngram |>
+  separate(bigram, c("word1", "word2"), sep = " ") |>
+  filter(!word1 %in% stop_words$word,
+         !word2 %in% stop_words$word) |>
+  count(word1, word2, sort = TRUE)
+```
+
+```{r}
+# filter for only relatively common combinations
+bigram_graph <- bigrams_filtered |>
+  filter(n > 1) |>
+  graph_from_data_frame()
+```
+
+```{r}
+set.seed(2017)
+
+ggraph(bigram_graph, layout = "fr") +
+  geom_edge_link() +
+  geom_node_point() +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1)
+```
+
+The first thing I see on the graph is Spanish words. I guess I did not consider that some of the reviews could be written in languages other than English.
+
+But, I also see "chester bennington"? From Linkin Park?
+
+```{r}
+str_view(all_reviews$review, "chester")
+```
+
+So, I looked it up, and Chester Bennington did make a cameo appearance in Saw 3D, which I did not know until doing the project, and I have seen the movie before. 
