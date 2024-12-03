@@ -33,7 +33,7 @@ praise()
 ```
 
 
-## Examnples
+## Examples
 
 ```{r}
 praise()
@@ -85,6 +85,18 @@ praise("${rpackage}! ${rpackage}! ${rpackage}! ${rpackage}! ${rpackage}!")
 
 ```{r}
 praise("${created}! ${created}! ${created}! ${created}! ${created}!")
+```
+## Playing around
+```{r}
+praise("${Exclamation}! You are ${adverb_manner} ${creating} that graph so ${adverb}!")
+```
+
+```{r}
+praise("${Exclamation}! Your ${adjective} code is ${creating} results ${adverb_manner}!")
+```
+
+```{r}
+praise("Keep going! You're ${adverb_manner} ${creating} those plots in such a ${adjective} way!")
 ```
 
 
