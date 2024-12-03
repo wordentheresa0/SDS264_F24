@@ -1,0 +1,93 @@
+---
+title: "R Tip of the Day"
+author: "Theresa Worden"
+format:
+  revealjs: 
+    slide-number: true
+    preview-links: auto
+    self-contained: true
+execute:
+  echo: true
+  eval: true
+editor_options: 
+  chunk_output_type: console
+---
+
+
+## Setting the Scene
+![ ](https://as2.ftcdn.net/v2/jpg/04/16/25/61/1000_F_416256149_Vai5AiSeHSUISQM6WBJ0QFGFjfNTXArt.jpg)
+
+## Setting the Scene
+
+![ ](https://cbx-prod.b-cdn.net/COLOURBOX61590340.jpg?width=800&height=800&quality=70)
+
+## Setting the Scene
+![ ](https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS-ihySWVxQcQ-O8bq1miQ10a3WRW9jGQHmng&s)
+
+
+## The 'praise' package
+
+```{r}
+library(praise)
+praise()
+```
+
+
+## Examnples
+
+```{r}
+praise()
+```
+
+```{r}
+praise()
+```
+
+```{r}
+praise()
+```
+
+## Custom Sentences
+
+You can supply a template, and `praise()` fills in random words of the specified part of speech:
+
+```{r}
+praise("${EXCLAMATION}! You have done this ${adverb_manner}!")
+```
+
+Note that capitalization in the inserted words will be the same as in the template:
+
+```{r}
+praise("${Exclamation}! ${EXCLAMATION}!-${EXCLAMATION}! This is just ${adjective}!")
+```
+
+## Parts of Speech
+
+Currently supported parts of speech:
+
+```{r}
+names(praise_parts)
+```
+
+## Exclamation
+
+```{r}
+praise("${Exclamation}! ${Exclamation}! ${Exclamation}! ${Exclamation}! ${Exclamation}!")
+```
+
+## rpackage
+
+```{r}
+praise("${rpackage}! ${rpackage}! ${rpackage}! ${rpackage}! ${rpackage}!")
+```
+
+## created
+
+```{r}
+praise("${created}! ${created}! ${created}! ${created}! ${created}!")
+```
+
+
+## Source
+
+https://github.com/rladies/praise 
